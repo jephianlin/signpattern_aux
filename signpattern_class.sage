@@ -115,4 +115,4 @@ class SignPattern:
         return all_canonical_ptns;   
         
     def is_equivalent(self,ptn_B,trans=True,neg=True):         
-        return (ptn_B.canonical_label() in self.sign_similar_class(negation));
+        return (ptn_B.canonical_label() in self.sign_similar_class(trans,neg));

@@ -114,7 +114,7 @@ def tuple_generator(k,n):
         yield a;
         counter+=1;
 
-def sign_pattern_generator(n,irreducible=True,trans=True,neg=True):
+def sign_pattern_generator(base,irreducible=True,trans=True,neg=True):
     """
     Input:
         n: the size of the sign pattern;
@@ -124,7 +124,16 @@ def sign_pattern_generator(n,irreducible=True,trans=True,neg=True):
     Output:
         generate all n by n sign patterns;
     """
-    for dig in digraphs_with_loop(n,irreducible,trans):
+    if isinstance(base,Integer):
+        n=base;
+        considered_graphs=digraphs_with_loop(n,irreducible,trans);
+    if isinstance(base,DiGraph):
+        n=base.order();
+        if base.allows_loops():
+            considered_graphs=[base];
+        else:
+            considered_graphs=all_loop_configurations(base,trans,return_graph=True);
+    for dig in considered_graphs:
         E=dig.edges(labels=False);
         m=len(E);
         appeared=[];

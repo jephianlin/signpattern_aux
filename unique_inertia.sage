@@ -219,6 +219,25 @@ def UI_tree_pattern(g,print_process=False):
         ### In the case that g has an edge yet no rules can be applied.
         return False;
 
+def embed_subpattern(sub_ptn, ptn):
+    """
+    Input:
+        sub_ptn, ptn: two sign patterns;
+    Output:
+        find a principle subpattern of ptn that is equivalent to sub_ptn;
+        return True or False;
+    """
+    sim_cls=sub_ptn.sign_similar_class();
+    k=sub_ptn.dim[0];
+    n=ptn.dim[0];
+    mtx=ptn.repr;
+    for com in Combinations(range(n),k):
+        mtx_com=mtx[com,com];
+        ptn_com=SignPattern(mtx_com);
+        if ptn_com.canonical_label() in sim_cls:
+            return True;
+    return False; 
+
 def unique_inertia(mtx,S_seq=None):
     """
     Input:
@@ -233,11 +252,12 @@ def unique_inertia(mtx,S_seq=None):
             3) If skew-symmetric tree sign pattern, return True;
             4) Separate S_seq to two sequences even_seq and odd_seq;
                Use Discartes' rule of sign to determine the number of pure imaginary eigenvalues;
-            5) Embedded SAP. (not yet implemented)               
+            5) Embedded SAP. If an SAP of order k can be embedded in a sign pattern of order n<=2k-1, then return False.            
     """
     if S_seq==None:
         S_seq=S_sequence(mtx);
     n=len(S_seq)-1;
+    ptn=SignPattern(mtx);
     
     ### 0) Trivial cases
     if S_seq==[0]*(n+1):
@@ -273,5 +293,14 @@ def unique_inertia(mtx,S_seq=None):
         if -2 not in even_seq and (1 in even_seq or -1 in even_seq) and sign_changes(odd_terms_negation(even_seq))==0:
             return True;
         if -2 not in odd_seq and (1 in odd_seq or -1 in odd_seq) and sign_changes(odd_terms_negation(odd_seq))==0:
-            return True;                    
+            return True;           
+            
+        ### 5) Embed SAP. (assuming n>=3.)
+        T2=SignPattern(matrix(2,[-1,-1,1,1]));
+        known_SAPs={i:[] for i in range(101)};
+        known_SAPs[2]=[T2];
+        for k in range(integer_ceil((n+1)/2),n): #k=n is unnecessary since SAP of order n has last_nonzero=-2
+            for sub_ptn in known_SAPs[k]:
+                if embed_subpattern(sub_ptn,ptn):
+                    return False;
         return "No conclusion yet";

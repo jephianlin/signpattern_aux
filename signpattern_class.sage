@@ -1,3 +1,22 @@
+### This function is required for computing the Resultant.
+def Sylvester_matrix(p,q):
+    """
+    Input:
+        p,q: two polynomials in the form of lists;
+    Output:
+        the Sylvester matrix of p and q;
+    """
+    a,b=len(p),len(q);
+    n=a+b-2;
+    aug_a=[0]*(n-a)+p;
+    aug_b=[0]*(n-b)+q;
+    Syl_mtx=[];
+    for i in range(b-1):
+        Syl_mtx.append(aug_a[i:]+[0]*i);
+    for i in range(a-1):
+        Syl_mtx.append(aug_b[i:]+[0]*i);
+    return matrix(Syl_mtx).transpose();
+
 class SignPattern:
     def __init__(self,mtx):
         """
@@ -116,3 +135,56 @@ class SignPattern:
         
     def is_equivalent(self,ptn_B,trans=True,neg=True):         
         return (ptn_B.canonical_label() in self.sign_similar_class(trans,neg));
+
+    def general_form(self):
+        mtx=self.repr;
+        m,n=mtx.dimensions();
+        X=zero_matrix(m,n);
+        X=X.change_ring(matrix([var("x")]).base_ring());
+        for i in range(m):
+            for j in range(n):
+                if mtx[i,j]>0:
+                    X[i,j]=var("x%s%s"%(i,j));
+                if mtx[i,j]<0:
+                    X[i,j]=-var("x%s%s"%(i,j));
+        return X;
+    
+    def Resultant(self,return_expression=False):
+        X=self.general_form();
+        n=X.dimensions()[0];
+        S=[1];
+        for k in range(1,n+1):
+            minor_sum=sum([det(X[com,com]) for com in Combinations(range(n),k)]);
+            S.append(minor_sum);
+        even_poly=[];
+        odd_poly=[];
+        for k in range(n+1):
+            if k%4==0:
+                even_poly.append(S[k]);
+            elif k%4==1:
+                odd_poly.append(S[k]);
+            elif k%4==2:
+                even_poly.append(-S[k]);
+            else: #k%4==3;
+                odd_poly.append(-S[k]);
+        Syl=Sylvester_matrix(even_poly,odd_poly);
+        res=det(Syl).expand();
+        if return_expression:
+            return res;
+        else:
+            cfs=res.polynomial(QQ).coefficients();
+            if cfs==[] or cfs==[0]:
+                return 0;
+            else:
+                counter=[0,0]; # + and -
+                for cf in cfs:
+                    if cf>0:
+                        counter[0]+=1;
+                    if cf<0:
+                        counter[1]+=1;
+                    if counter[0]>0 and counter[1]>0:
+                        return -2;
+                if counter[0]>0 and counter[1]==0:
+                    return 1;
+                if counter[0]==0 and counter[1]>0:
+                    return -1;

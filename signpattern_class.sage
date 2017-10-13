@@ -149,8 +149,11 @@ class SignPattern:
                     X[i,j]=-var("x%s%s"%(i,j));
         return X;
     
-    def Resultant(self,return_expression=False):
-        X=self.general_form();
+    def Resultant(self,gen_form=None,return_expression=False):
+        if gen_form==None:
+            X=self.general_form();
+        else:
+            X=gen_form;
         n=X.dimensions()[0];
         S=[1];
         for k in range(1,n+1):

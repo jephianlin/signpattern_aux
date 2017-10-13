@@ -252,7 +252,8 @@ def unique_inertia(mtx,S_seq=None):
             3) If skew-symmetric tree sign pattern, return True;
             4) Separate S_seq to two sequences even_seq and odd_seq;
                Use Discartes' rule of sign to determine the number of pure imaginary eigenvalues;
-            5) Embedded SAP. If an SAP of order k can be embedded in a sign pattern of order n<=2k-1, then return False.            
+            5) If resultant is combinatorial nonzero, return True;
+            6) Embedded SAP. If an SAP of order k can be embedded in a sign pattern of order n<=2k-1, then return False.            
     """
     if S_seq==None:
         S_seq=S_sequence(mtx);
@@ -295,7 +296,12 @@ def unique_inertia(mtx,S_seq=None):
         if -2 not in odd_seq and (1 in odd_seq or -1 in odd_seq) and sign_changes(odd_terms_negation(odd_seq))==0:
             return True;           
             
-        ### 5) Embed SAP. (assuming n>=3.)
+        ### 5) Resultant.
+        res=ptn.Resultant();
+        if res in [1,-1]:
+            return True;
+        
+        ### 6) Embed SAP. (assuming n>=3.)
         T2=SignPattern(matrix(2,[-1,-1,1,1]));
         known_SAPs={i:[] for i in range(101)};
         known_SAPs[2]=[T2];
@@ -303,4 +309,33 @@ def unique_inertia(mtx,S_seq=None):
             for sub_ptn in known_SAPs[k]:
                 if embed_subpattern(sub_ptn,ptn):
                     return False;
-        return "No conclusion yet";
+        
+        ### 7）Special cases for n=3.
+        if n==3 and res==-2:
+            if S_seq[2]==1:
+                return False;
+            if S_seq[1]==1 and S_seq[3]==1:
+                return False;
+            if S_seq[1]==-1 and S_seq[3]==-1:
+                return False;
+            if S_seq==[1,-2,-2,1] or S_seq==[1,-2,-2,-1]:
+                if S_seq[3]==-1:
+                    new_mtx=-mtx;
+                else:
+                    new_mtx=mtx;
+                new_ptn=SignPattern(new_mtx);
+                X=new_ptn.general_form();
+                d=var("d");
+                ### Since s3=1 and s1=-2, diagonal entries are {+,-,0} or {+,-,-};
+                ### Find the positive index on diagonal;
+                for i in range(3):
+                    if new_mtx[i,i]==1:
+                        p_ind=i; # ideally only one
+                ### making the trace equal d
+                new_var=d+sum([new_mtx[i,i]*X[i,i] for i in range(3) if new_mtx[i,i]==-1]);
+                X[p_ind,p_ind]=new_var;
+                new_res=new_ptn.Resultant(gen_form=X,return_expression=False);
+                if new_res in [1,-1]:
+                    return True;
+                
+        return "No conclusion yet";  

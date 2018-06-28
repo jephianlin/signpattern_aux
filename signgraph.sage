@@ -118,9 +118,7 @@ def is_sign_bipartite(g,certificate=False):
                 else:
                     return False;
         else:
-            print "1"
             if certificate:
-                print "2"
                 sig={};
                 for com in g.connected_components_subgraphs():
                     st=rooted_spanning_tree(com);
@@ -129,5 +127,4 @@ def is_sign_bipartite(g,certificate=False):
                         sig[key]=com_sig[key];
                 return sig;
             else:
-                print "3"
                 return True;

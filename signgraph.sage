@@ -84,6 +84,24 @@ def make_spanning_tree_positive(g,st=None,return_signature=False):
         return h,sign_signature;
     else:
         return h;
+
+def find_a_sign_path(g,u,v):
+    """
+    Input:
+        g: a sign graph;
+        u,v: two vertices;
+    Output:
+        a path connecting u and v and a list of signs of the edges on the path;
+    """
+    all_p=g.all_paths(u,v);
+    if len(all_p)==0:
+        return False;
+    else:
+        p=all_p[0];
+    edge_signs=[];
+    for k in range(len(p)-1):
+        edge_signs.append(g.edge_label(p[k],p[k+1]));
+    return p,edge_signs;    
     
 def is_sign_bipartite(g,certificate=False):
     """
@@ -93,7 +111,7 @@ def is_sign_bipartite(g,certificate=False):
     Output:
         True or False if g is a sign bipartite graph;
         certificate for True is a sign_signature (dictionary);
-        certificate for False is a odd signed cycle (a list), which is a cycle with odd number of -1;
+        certificate for False is a odd signed cycle (a 2-tuple), which is a cycle with odd number of -1;
     """
     if g.is_connected():
         st=rooted_spanning_tree(g);
@@ -103,7 +121,10 @@ def is_sign_bipartite(g,certificate=False):
             if e[2]==-1:
                 if certificate:
                     p=simple_st.all_paths(e[0],e[1])[0];
-                    return p;
+                    p.append(p[0]);
+                    for k in range(len(p)-1):
+                        edge_signs.append(g.edge_label(p[k],p[k+1]));
+                    return p,edge_signs;
                 else:
                     return False;
         if certificate:

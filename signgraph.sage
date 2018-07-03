@@ -122,6 +122,7 @@ def is_sign_bipartite(g,certificate=False):
                 if certificate:
                     p=simple_st.all_paths(e[0],e[1])[0];
                     p.append(p[0]);
+                    edge_signs=[];
                     for k in range(len(p)-1):
                         edge_signs.append(g.edge_label(p[k],p[k+1]));
                     return p,edge_signs;
